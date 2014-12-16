@@ -1,0 +1,73 @@
+---
+title       : Sales report
+subtitle    : Over the period 2009-2012
+author      : Morozov Anton
+job         : Data analyst
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+---
+
+## Overview
+
+- This sales recort includes the data collected over the period from 2009 to 2012 years
+- The brief source data could be seen below:
+
+```{r echo=FALSE}
+data <- read.csv(file = "..\\..\\part1\\sales.csv", sep = ";", header = TRUE, dec = ",")
+data$Order.Date <- as.Date(data$Order.Date, format = "%d.%m.%Y")
+data$Ship.Date <- as.Date(data$Ship.Date, format = "%d.%m.%Y")
+head(data[, 1:5], n = 10)
+```
+
+---
+
+## Main calculated characteristics
+
+- The most big order is 
+```{r echo=FALSE}
+data[which.max(data$Sales),1:5]
+```
+
+- The minimal order order is 
+```{r echo=FALSE}
+data[which.min(data$Sales),1:5]
+```
+- The total turnover over the peiod is `r round(sum(data$Sales)/1000000, 2)` millions $
+
+---
+
+## The distribution by year
+
+```{r echo=FALSE}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+data$year <- year(data$Order.Date)
+groupByYear <- data %>%
+  group_by(year) %>%
+  summarise(Amount = sum(Sales, na.rm=TRUE)) %>%
+  arrange(desc(Amount))
+
+groupByYear$Amount <- round(groupByYear$Amount/1000000, 3)
+
+ggplot(groupByYear, aes(x = reorder(year, desc(Amount)), y = Amount)) + 
+  geom_bar(stat = "identity", fill = "green", las = 3) + xlab("Year") + 
+  ylab("Amount of Sales in millions $")
+```
+
+---
+
+## Distribution of turnover depending on oreder priority
+
+```{r echo=FALSE}
+data$SalesMln <- data$Sales / 1000000
+
+ggplot(data, aes(x = reorder(Order.Priority, desc(SalesMln)), y = SalesMln)) + 
+  geom_bar(stat = "identity", fill = "blue", las = 3) +  xlab("Order Priority") + 
+  ylab("Amount of Sales in millions $")
+
+
+```
